@@ -1,0 +1,180 @@
+<krpano version="1.0.8">
+	
+	<!-- default quality settings -->
+	<display flash10="on" movequality="LOW" stillquality="HIGH" movequality10="HIGH" stillquality10="HIGH" />
+	
+	<textstyle name="DEFAULT"
+           font="Arial" fontsize="20"
+           bold="true" italic="true"
+           textcolor="0x000000"
+           background="false" border="false"
+           blendmode="layer"
+           effect="glow(0xFFFFFF,0.85,4,4);dropshadow(2,45,0x000000,4,1);"
+           origin="cursor" edge="bottom"
+           xoffset="15" yoffset="-5"
+           showtime="0.1" fadeintime="0.1" fadetime="0.1"
+           />
+	
+	<!-- button showtext() style -->
+	<textstyle name="buttonstyle" font="Arial" fontsize="12" bold="true" italic="true"
+	           textcolor="0x000000" background="false" border="false"
+	           blendmode="layer" effect="glow(0xFFFFFF,0.85,4,4);dropshadow(2,45,0x000000,4,1);"
+	           origin="cursor" edge="bottom" xoffset="15" yoffset="-5" showtime="0.1" fadeintime="0.1" fadetime="0.1"
+	           />
+	
+	<textstyle	name="game_over" fontsize="80" bold="true" textcolor="0x000000" background="false" border="false"
+				origin="center" textalign="center" effect="glow(0xFF0000,0.85,4,8);dropshadow(4,45,0xFF0000,4,1);blur(3);"
+				showtime="20" fadetime="10"
+				/>
+				
+	<textstyle	name="game_over_good" fontsize="80" bold="true" textcolor="0x000000" background="false" border="false"
+				origin="center" textalign="center" effect="glow(0x559abb,0.85,4,8);dropshadow(4,45,0x559abb,4,1);blur(3);"
+				showtime="20" fadetime="10"
+				/>
+				
+	<textstyle	name="game_text" fontsize="80" bold="true" textcolor="0x000000" background="false" border="false"
+				origin="center" effect="glow(0xFF0000,0.85,4,8);dropshadow(4,45,0xFF0000,4,1);blur(3);"
+				showtime="20" fadetime="10"
+				/>
+				
+	<textstyle	name="game_cursor_text" fontsize="20" bold="true" textcolor="0x000000" background="false" border="false"
+				origin="cursor" effect="glow(0xFF0000,0.85,4,8);dropshadow(4,45,0xFF0000,4,1);blur(3);"
+				showtime="2" fadetime="1"
+				/>
+	
+	<style name="fireball" url="%SWFPATH%/data/fireball.png" />
+	
+	<!-- right-click context menu to change the viewing settings -->
+	<contextmenu>
+		<item caption="KRPANO"     />
+		<item caption="FULLSCREEN" />
+		<item caption="Quillamwa"		   onclick="openurl(http://www.quillamwa.com);" />
+		<item caption="normal view"        onclick="action(view_normal);"        separator="true" />
+		<item caption="fisheye view"       onclick="action(view_fisheye);"       />
+		<item caption="architectural view" onclick="action(view_architectural);" />
+		<item caption="stereographic view" onclick="action(view_stereographic);" />
+		<item caption="pannini view"       onclick="action(view_pannini);"       />
+		<item caption="little planet view" onclick="action(view_littleplanet);"  />
+	</contextmenu>
+	
+
+	<action name="qtvrcursor">
+		set(plugin[dragmode].visible, true);
+		set(plugin[movemode].visible, false);
+		set(control.mousetype, moveto);
+		set(cursors.url, %SWFPATH%/skin/qtvr-cursors.png);
+		set(cursors.type, 8way);
+		set(cursors.move,       0|0|16|16);
+		set(cursors.drag,      16|0|16|16);
+		set(cursors.arrow_u,   32|0|16|16);
+		set(cursors.arrow_d,   48|0|16|16);
+		set(cursors.arrow_l,   64|0|16|16);
+		set(cursors.arrow_r,   80|0|16|16);
+		set(cursors.arrow_lu,  96|0|16|16);
+		set(cursors.arrow_ru, 112|0|16|16);
+		set(cursors.arrow_rd, 128|0|16|16);
+		set(cursors.arrow_ld, 144|0|16|16);
+	</action>
+
+
+
+	<!-- actions for view changing -->
+	<action name="view_normal">
+		tween(view.fovmax,       150.0, distance(179, 1.00), easeoutquad);
+		tween(view.architectural,  0.0, distance(1.0, 0.45), easeoutquad);
+		tween(view.fisheye,        0.0, distance(1.0, 0.45), easeoutquad, set(view.stereographic,false); set(view.pannini,false); set(display.flash10,on); );
+	</action>
+
+
+	<action name="view_fisheye">
+		set(display.flash10,off);
+		tween(view.architectural, 0.0, distance(1.0, 0.30), easeoutquad);
+		tween(view.fisheye,       0.0 ,distance(1.0, 0.30), easeoutquad, set(view.stereographic,false); set(view.pannini,false); set(view.fovmax,179); tween(view.fisheye, 0.35, distance(1.0,1.25)); );
+	</action>
+
+
+	<action name="view_architectural">
+		tween(view.fovmax,       150.0, distance(179, 1.00), easeoutquad);
+		tween(view.architectural,  1.0, distance(1.0, 0.45), easeoutquad);
+		tween(view.fisheye,        0.0, distance(1.0, 0.45), easeoutquad, set(view.stereographic,false);set(view.pannini,false);set(display.flash10,on); );
+	</action>
+
+
+	<action name="view_stereographic">
+		set(display.flash10,off);
+
+		tween(view.architectural, 0.0, 0.25);
+
+		set(backtonormalfirst,false);
+		if(view.pannini       == true,  set(backtonormalfirst,true) );
+		if(view.stereographic == false, set(backtonormalfirst,true) );
+
+		if(backtonormalfirst, tween(view.fisheye, 0.0 ,distance(1.0, 0.25), easeoutquad, WAIT); );
+
+		set(view.pannini, false);
+		set(view.stereographic, true);
+		set(view.fovmax, 150);
+
+		tween(view.fisheye, 1.0, distance(1.0, 0.75), easeoutquad);
+	</action>
+
+
+	<action name="view_pannini">
+		set(display.flash10,off);
+
+		tween(view.architectural, 0.0, 0.25);
+
+		set(backtonormalfirst,false);
+		if(view.pannini       == false, set(backtonormalfirst,true) );
+		if(view.stereographic == false, set(backtonormalfirst,true) );
+
+		if(backtonormalfirst, tween(view.fisheye, 0.0 ,distance(1.0, 0.25), easeoutquad, WAIT); );
+
+		set(view.pannini, true);
+		set(view.stereographic, true);
+		set(view.fovmax, 150);
+
+		tween(view.fisheye, 1.0, distance(1.0, 0.75), easeoutquad);
+	</action>
+
+
+	<action name="view_littleplanet">
+		set(display.flash10,off);
+
+		tween(view.architectural, 0.0, 0.25);
+
+		tween(view.vlookat,  90, distance(179, 1.50), easeoutquad);
+
+		set(backtonormalfirst,false);
+		if(view.pannini       == true,  set(backtonormalfirst,true) );
+		if(view.stereographic == false, set(backtonormalfirst,true) );
+
+		if(backtonormalfirst, tween(view.fisheye, 0.0 ,distance(1.0, 0.25), easeoutquad, WAIT); );
+
+		set(view.pannini, false);
+		set(view.stereographic, true);
+		set(view.fovmax, 150);
+
+		tween(view.fisheye, 1.0, distance(1.0, 0.75), easeoutquad);
+		tween(view.fov,     150, distance(179, 0.75), easeoutquad);
+	</action>
+
+
+
+	<!-- setup pano, will be called on the onxmlcomplete event -->
+	<action name="setuppano">
+		<!-- set qtvr cursor -->
+		action(qtvrcursor);
+
+		<!-- hide the other view settings in the context menu on partial panos -->
+		if(ispartialpano === true, set(showviewitems,false), set(showviewitems,true));
+
+		set(contextmenu.item[2].visible, get(showviewitems));
+		set(contextmenu.item[3].visible, get(showviewitems));
+		set(contextmenu.item[4].visible, get(showviewitems));
+		set(contextmenu.item[5].visible, get(showviewitems));
+		set(contextmenu.item[6].visible, get(showviewitems));
+		set(contextmenu.item[7].visible, get(showviewitems));
+	</action>
+
+</krpano>

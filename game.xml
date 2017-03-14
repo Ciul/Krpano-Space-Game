@@ -1,0 +1,255 @@
+<krpano version="1.0.8" onstart="action(startup);" logkey="true" showerrors="true" >
+	
+	<action name="startup">
+		qtvrcursor();
+		view_fisheye();
+	</action>
+	
+	<preview type="grid(CUBE,18,18,500,0x000000,0x000000,0x000000);" />
+	<image type="CUBE">
+		<left url="data/space.jpg" />
+		<front url="data/space.jpg" />
+		<right url="data/space.jpg" />
+		<back url="data/space.jpg" />
+		<up url="data/sun.jpg" />
+		<down url="data/pano_d.jpg" />
+	</image> 
+	
+	<progress showload="none" showwait="none" />
+	
+	<include url="skin/defaultskin.xml" />
+	
+	<plugin name="soundinterface"
+        url="%SWFPATH%/plugins/soundinterface.swf"
+        preload="true"
+        rootpath="%SWFPATH%/sounds/"
+        volume="1"
+        onloaded="preloadsound(game.mp3);preload(explosion.mp3);"
+        />
+	
+	<hotspot name="logo"
+		url="%SWFPATH%/graphics/logo+text.png"
+		ath="0" atv="0"
+		scale="1"
+		onloaded=""
+		onhover="showtext(Start New Game);"
+		onclick="loadscene(gamestart);"
+		onover="tween(scale,1.2,0.5,easeOutElastic);"
+		onout="tween(scale,1,0.5,easeOutElastic);"
+		/>
+	
+	<plugin name="instructions"
+		url="%SWFPATH%/plugins/textfield.swf"
+		align="lefttop"
+		x="10" y="0"
+		html="data:instructionsdata"
+		css="data:cssdata"
+		autosize="true"
+		background="false"
+		/>
+		
+	<data name="instructionsdata">
+		<h3>Instructions:</h3>
+		<p>
+		   The Sun threatens to destroy the Earth, 
+		   scientists has entrusted you the super laser machine,
+		   You are the only one who can save the world!
+		   Destroy Fire Balls before time limit.
+		</p>
+		<p>
+			<font size="-6">
+			<font color="#FF00000">Note:<br/></font>
+			- You shall use a mouse to play more comfortable. <br/>
+			- Click on Fire Balls to destroy them before they reach the Earth. <br/>
+			- First Fire Ball is just for illustration.
+			</font>
+		</p>
+	</data>
+	
+	<data name="cssdata">
+		h3{color:#FF0000;font-size:40;}
+		p{color:#FFFFFF;font-size:26;}
+	</data> 
+	
+	<!----------------------------------------------------- SCENES ----------------------------------------------------->
+	<!------------------------------------------------------------------------------------------------------------------>
+	
+	<scene name="gamestart" onstart="startgame();">
+		<progress showload="none" />
+		
+		<image type="CUBE">
+			<left url="data/space.jpg" />
+			<front url="data/space.jpg" />
+			<right url="data/space.jpg" />
+			<back url="data/space.jpg" />
+			<up url="data/sun.jpg" />
+			<down url="data/pano_d.jpg" />
+		</image>
+		
+		<plugin name="score" keep="true"
+			url="%SWFPATH%/plugins/textfield.swf"
+			html="[p]Score: [/p]"
+			css="p{font-size:40;color:#FF0000;}"
+			align="rightbottom" edge="rightbottom"
+			autosize="true" width="20%"
+			background="false"
+			selectable="false"
+			x="0" y="10"
+			/>
+		
+	</scene>
+	
+	<scene name="gameover_goodending" onstart="startup();">
+		
+		<action name="startup">
+			stopallsounds();
+			showtext(GAME OVER[br/]YOU SAVED THE EARTH, game_over_good);
+			playsound2D(auto, win.mp3, 0.8);
+		</action>
+		
+		<preview type="grid(CUBE,18,18,500,0x000000,0x000000,0x000000);" />
+		
+		<image type="CUBE">
+			<left url="data/space.jpg" />
+			<front url="data/space.jpg" />
+			<right url="data/space.jpg" />
+			<back url="data/space.jpg" />
+			<up url="data/sun.jpg" />
+			<down url="data/pano_d.jpg" />
+		</image>
+		
+	</scene>
+	
+	<scene name="gameover_badending" onstart="startup();">
+		
+		<action name="startup">
+			stopallsounds();
+			showtext(GAME OVER[br/]EARTH WAS DESTROYED[br/], game_over);
+			txtadd(gameover_message, 'You need minumum score of ', get(score_towin), ' to win.');
+			delayedcall(5, showtext(get(gameover_message), game_over); );
+			playsound2D(auto, lose.mp3, 0.8);
+		</action>
+		
+		<preview type="grid(CUBE,18,18,500,0x000000,0x000000,0x000000);" />
+		
+		<image type="CUBE">
+			<left url="data/space.jpg" />
+			<front url="data/space.jpg" />
+			<right url="data/space.jpg" />
+			<back url="data/space.jpg" />
+			<up url="data/sun.jpg" />
+			<down url="data/earthdestroyed.jpg" />
+		</image>
+		
+	</scene>
+	
+	<!----------------------------------------------------- /SCENES ----------------------------------------------------->
+	<!------------------------------------------------------------------------------------------------------------------->
+	
+	<action name="startgame">
+		<!-- Developing code? -->
+		set(develop, false);
+		
+		<!-- GAME ENDING PARAMETERS -->
+		set(fireballs_limit, 10);
+		set(score_towin, 6);
+		set(gameended, false);
+		
+		showtext('The Sun is throwing fire balls to the Earth', game_cursor_text);
+		delayedcall(3, showtext('Scientists has entrusted you the super laser machine', game_cursor_text););
+		delayedcall(6, showtext('You are the only one who can save the Earth!', game_cursor_text); );
+		
+		<!-- Play Game Sound -->
+		playsound2D(game, game.mp3,0.5,0,0);
+		
+		lookto(0,-50);
+		wait(1);
+		initialfire();
+	</action>
+	
+	<action name="makefire">
+		if(firenumber === null, set(firenumber,0););
+		txtadd(firename,'fire_',get(firenumber));
+		
+		if(firenumber GE fireballs_limit,
+			set(gameended, true);
+		);
+		inc(firenumber);
+		
+		if(gameended == true,
+			if(score GE score_towin,
+				loadscene(gameover_goodending);
+			,
+				loadscene(gameover_badending);
+			);
+			stopall();
+		,
+			delayedcall(1, createfire(firename););
+		);
+		
+		
+	</action>
+	
+	<action name="createfire">
+		if(develop == true,
+			showlog();
+			trace('createfire: ', %1);
+		);
+		
+		if(%1 !== null, 
+			mul(firepos, random, 349);
+			add(firepos, 1);
+			roundval(firepos);
+			
+			addhotspot(%1);
+			set(hotspot[%1].url,'data/fireball.png');
+			set(hotspot[%1].ath, get(firepos));
+			set(hotspot[%1].atv,-50);
+			set(hotspot[%1].onclick, inc(score); if(develop == true,trace('score: ', score);); txtadd(scoretext,'[p]Score: ',get(score),'[/p]');showtext(get(scoretext),game_cursor_text); destroyfire(%1);  );
+			tween(hotspot[%1].atv,42,3,linear, if(develop == true,trace(%1,' being destroyed.');); destroyfire(%1); );
+		);
+	</action>
+	
+	<action name="initialfire">
+		<!-- Initial Score Value -->
+		set(score, 0);
+		
+		addhotspot(firstfire);
+		set(hotspot[firstfire].url, data/fireball.png);
+		set(hotspot[firstfire].enabled, false);
+		set(hotspot[firstfire].ath, 0);
+		set(hotspot[firstfire].atv, -50);
+		tween(hotspot[firstfire].atv,42,4,linear, destroyfire(hotspot[firstfire].name); );
+	</action>
+	
+	<action name="destroyfire">
+		if(develop == true,
+			showlog();
+			trace('destroyfire: ', %1);
+		);
+		if(%1 !== null,
+			if(%1 == 'firstfire',
+				lookto(0,45); 
+				set(hotspot[get(%1)].enabled,false);
+				set(hotspot[get(%1)].url,'data/explosion.gif');
+				,
+				set(hotspot[%1].enabled,false);
+				set(hotspot[%1].url,'data/explosion.gif');
+			);
+			
+			playsound2D(explosion,explosion.mp3,1.0,0,1);
+			if(%1 == 'firstfire',
+				tween(hotspot[get(%1)].alpha,0,0.5,linear, lookto(0,-90);removehotspot(get(%1)); makefire(); );
+				,
+				stoptween(hotspot[%1].atv);
+				txtadd(scoretext,'[p]Score: ',get(score),' / ',get(fireballs_limit),'[/p]');				
+				tween(hotspot[%1].alpha,0,0.5,linear, removehotspot(%1); makefire(); );
+				if(develop == true,	showlog();	trace(scoretext); );
+				set(plugin[score].html, get(scoretext));
+			);
+			
+		);
+		
+	</action>
+	
+</krpano>
